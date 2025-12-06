@@ -1,12 +1,36 @@
 <?php
 
-use Hanafalah\ModuleOrganization\Models as ModuleOrganization;
+use Hanafalah\ModuleOrganization\Commands\InstallMakeCommand;
 
 return [
-    'database' => [
-        'models' => [
-            'Organization'         => ModuleOrganization\Organization::class,
-            'ModelHasOrganization' => ModuleOrganization\ModelHasOrganization::class,
+    'app'  => [
+        'contracts' => [
+            //ADD YOUR CONTRACTS HERE
         ]
     ],
+    'libs' => [
+        'model'    => 'Models',
+        'contract' => 'Contracts',
+        'schema'   => 'Schemas'
+    ],
+    'database' => [
+        'models' => [
+        ]
+    ],
+    'libs' => [
+        'model' => 'Models',
+        'contract' => 'Contracts',
+        'schema' => 'Schemas',
+        'database' => 'Database',
+        'data' => 'Data',
+        'resource' => 'Resources',
+        'migration' => '../assets/database/migrations'
+    ],
+    'database' => [
+        'models' => [
+        ]
+    ],
+    'commands' => [
+        InstallMakeCommand::class
+    ]
 ];

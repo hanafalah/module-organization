@@ -2,44 +2,42 @@
 
 namespace Hanafalah\ModuleOrganization\Models;
 
-use Hanafalah\ModuleOrganization\Resources\ShowOrganization;
-use Hanafalah\ModuleOrganization\Resources\ViewOrganization;
-use Hanafalah\LaravelHasProps\Concerns\HasProps;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Hanafalah\LaravelSupport\Models\BaseModel;
+use Hanafalah\ModuleOrganization\Resources\Organization\{ViewOrganization,ShowOrganization};
+use Hanafalah\LaravelSupport\Concerns\Support\HasPhone;
+use Hanafalah\LaravelSupport\Models\Unicode\Unicode;
+use Hanafalah\ModuleRegional\Concerns\HasAddress;
+use Illuminate\Support\Str;
 
-class Organization extends BaseModel
+class Organization extends Unicode
 {
-    use HasProps, SoftDeletes;
+    use HasAddress, HasPhone;
 
-    protected $list                 = ["id", "name", "flag", "parent_id", "props"];
-    protected $show                 = [];
-    public static $__flags_service  = [];
-    protected $casts = [
-        'name' => 'string'
-    ];
+    protected $table = 'unicodes';
 
-    protected $getPropsQuery = [
-        'name' => 'name'
-    ];
-
-    public function toShowApi()
-    {
-        return new ShowOrganization($this);
+    protected static function booted(): void{
+        parent::booted();
+        static::creating(function ($query) {
+            $morph = $query->getMorphClass();
+            $query->{Str::snake($morph).'_code'} = static::hasEncoding(Str::upper(Str::snake($morph)));
+            $query->flag ??= $morph;
+        });
     }
 
-    public function toViewApi()
-    {
-        return new ViewOrganization($this);
+    public function viewUsingRelation(): array{
+        return $this->mergeArray(['parent'],parent::viewUsingRelation());
     }
 
-    public function scopeSetIdentityFlags($builder, array $flags)
-    {
-        self::$__flags_service = $flags;
+    public function showUsingRelation(): array{
+        return $this->mergeArray(['parent'],parent::showUsingRelation());
     }
 
-    public function modelHasOrganization()
-    {
-        return $this->morphOneModel('ModelHasOrganization', 'reference');
+    public function getShowResource(){
+        return ShowOrganization::class;
     }
+
+    public function getViewResource(){
+        return ViewOrganization::class;
+    }
+
+    public function modelHasOrganization(){return $this->morphOneModel('ModelHasOrganization', 'reference');}
 }
